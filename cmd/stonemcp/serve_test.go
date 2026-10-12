@@ -16,8 +16,8 @@ import (
 )
 
 func TestServeWithoutGame(t *testing.T) {
-	setVersion(t, "27.0-beta.2", "c4e1d20")
-	want := "27.0-beta.2 (c4e1d20)"
+	setBuild(t, "27.1", "27B5012b", "2026-10-13", "c4e1d20")
+	want := "27.1 (27B5012b)"
 	l := start(t, "--addr", noGame)
 	if got := l.InitializeResult().ServerInfo.Version; got != want {
 		t.Errorf("версия при подключении = %q, ожидалось %q", got, want)
@@ -73,7 +73,7 @@ func TestLogFileError(t *testing.T) {
 	var stderr strings.Builder
 	path := filepath.Join(t.TempDir(), "нет", "s.log")
 	code := run([]string{"--addr", noGame, "--log-file", path}, noEnv, nil, nil, &stderr)
-	if code != 1 || !strings.Contains(stderr.String(), "stonemcp: файл журнала") {
+	if code != 1 || !strings.Contains(stderr.String(), "Ошибка: файл журнала") {
 		t.Errorf("код = %d, stderr = %q, ожидались 1 и ошибка файла журнала", code, stderr.String())
 	}
 }

@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -11,12 +9,16 @@ import (
 	"syscall"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/spf13/cobra"
+
+	"github.com/shigabutdinoff/stonemcp/internal/cli"
 )
 
 var (
-	version   = "dev"
-	commit    string
-	buildDate string
+	buildVersion string
+	buildNumber  string
+	buildDate    string
+	buildCommit  string
 )
 
 func main() {
@@ -27,30 +29,41 @@ func exit(code int) {
 	os.Exit(code)
 }
 
-func versionString() string {
-	if commit == "" {
-		return version
+func versionLine() string {
+	switch {
+	case buildVersion == "":
+		return "N/A"
+	case buildNumber != "" && buildNumber != "dev":
+		return buildVersion + " (" + buildNumber + ")"
+	case buildCommit != "":
+		return buildVersion + " (" + buildCommit + ")"
 	}
-	return version + " (" + commit + ")"
+	return buildVersion
 }
 
 func run(args []string, env lookup, stdin io.ReadCloser, stdout io.WriteCloser, stderr io.Writer) int {
 	signal.Ignore(syscall.SIGPIPE)
 	j := newJournal(stderr)
 	defer j.shutdown()
-	o, err := parseFlags(args, env, j)
-	switch {
-	case errors.Is(err, flag.ErrHelp):
-		return 0
-	case err != nil:
-		return 2
-	case o.showVersion:
-		fmt.Fprintln(stdout, versionString())
-		return 0
+	code := 0
+	root := cli.New(buildVersion, buildNumber, buildDate, buildCommit, stdout, j)
+	settle := bindFlags(root, env)
+	root.RunE = func(*cobra.Command, []string) error {
+		o, err := settle()
+		if err != nil {
+			return err
+		}
+		ctx, stop := cancelOnFirstSignal()
+		defer stop()
+		code = serve(ctx, o, &mcp.IOTransport{Reader: stdin, Writer: stdout}, j)
+		return nil
 	}
-	ctx, stop := cancelOnFirstSignal()
-	defer stop()
-	return serve(ctx, o, &mcp.IOTransport{Reader: stdin, Writer: stdout}, j)
+	root.SetArgs(append([]string{}, args...))
+	if err := root.Execute(); err != nil {
+		fmt.Fprintln(j, "Ошибка:", err)
+		return 2
+	}
+	return code
 }
 
 func cancelOnFirstSignal() (context.Context, context.CancelFunc) {

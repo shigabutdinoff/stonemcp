@@ -21,7 +21,7 @@ func serve(ctx context.Context, o options, transport mcp.Transport, stderr io.Wr
 	if o.LogFile != "" {
 		f, err := os.OpenFile(o.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
 		if err != nil {
-			fmt.Fprintln(stderr, "stonemcp: файл журнала:", err)
+			fmt.Fprintln(stderr, "Ошибка: файл журнала:", err)
 			return 1
 		}
 		defer f.Close()
@@ -36,9 +36,9 @@ func serve(ctx context.Context, o options, transport mcp.Transport, stderr io.Wr
 }
 
 func play(ctx context.Context, o options, transport mcp.Transport, logger *slog.Logger) error {
-	v := versionString()
-	logger.Info("stonemcp запущен", "версия", cmp.Or(version, "N/A"), "дата сборки", cmp.Or(buildDate, "N/A"),
-		"коммит", cmp.Or(commit, "N/A"), "режим", o.Mode, "адрес", o.Addr)
+	v := versionLine()
+	logger.Info("stonemcp запущен", "версия", cmp.Or(buildVersion, "N/A"), "номер сборки", cmp.Or(buildNumber, "N/A"),
+		"дата сборки", cmp.Or(buildDate, "N/A"), "коммит", cmp.Or(buildCommit, "N/A"), "режим", o.Mode, "адрес", o.Addr)
 	ctx, cancel := context.WithCancel(ctx)
 	eng := engine.New(engine.Config{Addr: o.Addr, Logger: logger})
 	var engineDone sync.WaitGroup

@@ -31,25 +31,7 @@ func (r repo) tag(names ...string) {
 	}
 }
 
-func (r repo) edit()      { r.write("a", "2") }
 func (r repo) untracked() { r.write("b", "1") }
-
-func (r repo) foreignOrder() {
-	for _, s := range []string{"-pre", ".pre", "-beta", ".beta", "-rc", ".rc"} {
-		r.git("config", "--add", "versionsort.suffix", s)
-	}
-}
-
-func (r repo) hiddenUntracked() {
-	r.git("config", "status.showUntrackedFiles", "no")
-	r.untracked()
-}
-
-func (r repo) advance() {
-	r.untracked()
-	r.git("add", ".")
-	r.git("commit", "-qm", "второй")
-}
 
 func (r repo) write(name, text string) {
 	r.t.Helper()
@@ -68,7 +50,7 @@ func (r repo) make(target string) string {
 	if err != nil {
 		r.t.Fatalf("путь к Makefile не получен: %v", err)
 	}
-	return r.run(nil, "make", "-n", "-f", makefile, target)
+	return strings.TrimSpace(r.run(nil, "make", "-s", "-f", makefile, target, "GORELEASER=echo"))
 }
 
 func (r repo) run(env []string, name string, args ...string) string {
