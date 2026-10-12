@@ -97,11 +97,11 @@ func eventually(t *testing.T, why string, ok func() bool) {
 	}
 }
 
-func setVersion(t *testing.T, v, c string) {
+func setBuild(t *testing.T, version, number, date, commit string) {
 	t.Helper()
-	oldVersion, oldCommit := version, commit
-	version, commit = v, c
-	t.Cleanup(func() { version, commit = oldVersion, oldCommit })
+	old := [4]string{buildVersion, buildNumber, buildDate, buildCommit}
+	buildVersion, buildNumber, buildDate, buildCommit = version, number, date, commit
+	t.Cleanup(func() { buildVersion, buildNumber, buildDate, buildCommit = old[0], old[1], old[2], old[3] })
 }
 
 func listen(t *testing.T) *net.TCPListener {

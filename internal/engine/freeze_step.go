@@ -91,5 +91,5 @@ func (e *Engine) serveFrozen(s *session, snapshot *Snapshot) error {
 		}
 	}
 	commands, _, deferred := e.takeCommands()
-	return e.sendCommands(s, commands, nil, deferred)
+	return e.sendCommands(s, nil, commands, nil, deferred)
 }

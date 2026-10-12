@@ -47,7 +47,10 @@ go install github.com/shigabutdinoff/stonemcp/cmd/stonemcp@latest
 
 Бинарник появится в `$(go env GOPATH)/bin`. Из клона репозитория то же делает
 `make build`, он кладёт `stonemcp` в текущий каталог. `make release` собирает
-бинарники для пяти платформ в `dist/`.
+бинарники для шести платформ в `dist/`: macOS, Linux и Windows под amd64 и
+arm64. Файл выпущенной версии называется
+`stonemcp-<версия>-<номер сборки>-<os>-<arch>`, рабочей сборки
+`stonemcp-dev-<os>-<arch>`.
 
 ### Подключение к ассистенту
 
@@ -90,8 +93,18 @@ StoneMCP подключается к игре по адресу `127.0.0.1:64649
 | `--config`, `-c` | `STONEMCP_CONFIG` | | | файл конфигурации JSON |
 
 Переменная окружения сильнее флага, флаг сильнее файла. Stdout занят
-протоколом MCP, поэтому журнал туда не пишется. `stonemcp --version`
-печатает версию и выходит.
+протоколом MCP, поэтому журнал туда не пишется.
+`stonemcp --version` печатает версию, номер, дату и коммит сборки:
+
+```
+Build version: 27.0
+Build number: 27A41
+Build date: 2026-10-13
+Build commit: 3f2a9c1
+```
+
+`stonemcp completion <оболочка>` печатает скрипт автодополнения для bash,
+zsh, fish или powershell, `stonemcp help` справку по командам.
 
 Файл конфигурации:
 

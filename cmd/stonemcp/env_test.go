@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"strings"
 	"testing"
 )
@@ -32,7 +31,7 @@ func TestEnvOverridesFlags(t *testing.T) {
 		{"пустой адрес", flags[:2], vars{"STONEMCP_ADDR": ""}, settings{Mode: "sync"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := parseFlags(tc.args, tc.env.lookup, io.Discard)
+			o, err := parseFlags(tc.args, tc.env.lookup)
 			if err != nil || o.settings != tc.want {
 				t.Errorf("настройки = %+v, err = %v, ожидалось %+v", o.settings, err, tc.want)
 			}
@@ -42,10 +41,10 @@ func TestEnvOverridesFlags(t *testing.T) {
 
 func TestEnvModeErrors(t *testing.T) {
 	for _, tc := range []struct{ mode, want string }{
-		{"async", "stonemcp: STONEMCP_MODE async: режим не поддержан в stonemcp 27.0\n"},
-		{"exclusive", "stonemcp: STONEMCP_MODE exclusive: режим не поддержан в stonemcp 27.0\n"},
-		{"turbo", "stonemcp: STONEMCP_MODE turbo: неизвестный режим\n"},
-		{"", "stonemcp: STONEMCP_MODE : неизвестный режим\n"},
+		{"async", "Ошибка: STONEMCP_MODE async: режим не поддержан в stonemcp 27.0\n"},
+		{"exclusive", "Ошибка: STONEMCP_MODE exclusive: режим не поддержан в stonemcp 27.0\n"},
+		{"turbo", "Ошибка: STONEMCP_MODE turbo: неизвестный режим\n"},
+		{"", "Ошибка: STONEMCP_MODE : неизвестный режим\n"},
 	} {
 		var stdout buffer
 		var stderr strings.Builder

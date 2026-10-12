@@ -15,7 +15,11 @@ type commandQueue struct {
 }
 
 func newCommandQueue(cfg Config) commandQueue {
-	return commandQueue{holds: make(holdTable), queueLimit: cfg.QueueLimit, holdLimit: cfg.HoldLimit, budget: cfg.FrameBudget, clock: time.Now}
+	budget := cfg.FrameBudget
+	if cfg.Banner != "" {
+		budget--
+	}
+	return commandQueue{holds: make(holdTable), queueLimit: cfg.QueueLimit, holdLimit: cfg.HoldLimit, budget: budget, clock: time.Now}
 }
 
 func (q *commandQueue) add(job *commandJob) error {

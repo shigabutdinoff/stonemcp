@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"os"
 
@@ -19,13 +18,8 @@ type settings struct {
 	LogFile string `json:"log_file"`
 }
 
-type usageError struct{ error }
-
-func configure(flags settings, config string, fs *flag.FlagSet, env lookup) (settings, error) {
+func configure(flags settings, config string, changed func(string) bool, env lookup) (settings, error) {
 	s := settings{Addr: engine.DefaultAddr, Mode: engine.ModeSync}
-	if rest := fs.Args(); len(rest) > 0 {
-		return s, usageError{fmt.Errorf("лишний аргумент %q", rest[0])}
-	}
 	from := modeFlag
 	override(env, "STONEMCP_CONFIG", &config)
 	if config != "" {
@@ -34,16 +28,15 @@ func configure(flags settings, config string, fs *flag.FlagSet, env lookup) (set
 		}
 		from = "файл конфигурации " + config + ": mode"
 	}
-	fs.Visit(func(f *flag.Flag) {
-		switch f.Name {
-		case "addr":
-			s.Addr = flags.Addr
-		case "mode":
-			s.Mode, from = flags.Mode, modeFlag
-		case "log-file":
-			s.LogFile = flags.LogFile
-		}
-	})
+	if changed("addr") {
+		s.Addr = flags.Addr
+	}
+	if changed("mode") {
+		s.Mode, from = flags.Mode, modeFlag
+	}
+	if changed("log-file") {
+		s.LogFile = flags.LogFile
+	}
 	override(env, "STONEMCP_ADDR", &s.Addr)
 	if override(env, "STONEMCP_MODE", &s.Mode) {
 		from = "STONEMCP_MODE"
@@ -67,11 +60,7 @@ func checkMode(mode, from string) error {
 	case "async", "exclusive":
 		return fmt.Errorf("%s %s: %w", from, mode, engine.ErrUnsupportedMode)
 	}
-	err := fmt.Errorf("%s %s: неизвестный режим", from, mode)
-	if from == modeFlag {
-		return usageError{err}
-	}
-	return err
+	return fmt.Errorf("%s %s: неизвестный режим", from, mode)
 }
 
 func loadSettings(path string, s *settings) error {

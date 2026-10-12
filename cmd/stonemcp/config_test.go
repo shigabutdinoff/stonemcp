@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,7 +27,7 @@ func TestConfigFileLayers(t *testing.T) {
 		want settings
 	}{
 		{"флаг c", []string{"-c", short}, nil, fromShort},
-		{"флаг config", []string{"-config", short}, nil, fromShort},
+		{"флаг config", []string{"--config", short}, nil, fromShort},
 		{"флаги главнее файла", []string{"-c", full, "--mode", "sync", "--log-file", "f.log"}, nil,
 			settings{Addr: "127.0.0.1:7100", Mode: "sync", LogFile: "f.log"}},
 		{"окружение главнее флагов", []string{"-c", full, "--addr", "127.0.0.1:7000"},
@@ -37,7 +36,7 @@ func TestConfigFileLayers(t *testing.T) {
 		{"STONEMCP_CONFIG главнее флага", []string{"-c", full}, vars{"STONEMCP_CONFIG": short}, fromShort},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			o, err := parseFlags(tc.args, tc.env.lookup, io.Discard)
+			o, err := parseFlags(tc.args, tc.env.lookup)
 			if err != nil || o.settings != tc.want {
 				t.Errorf("настройки = %+v, err = %v, ожидалось %+v", o.settings, err, tc.want)
 			}
@@ -68,7 +67,7 @@ func TestConfigFileErrors(t *testing.T) {
 			var stderr strings.Builder
 			code := run(tc.args, tc.env.lookup, brokenInput(), &stdout, &stderr)
 			got := stderr.String()
-			prefix := "stonemcp: файл конфигурации " + tc.path + ": "
+			prefix := "Ошибка: файл конфигурации " + tc.path + ": "
 			if code != 2 || stdout.Len() != 0 || !strings.HasPrefix(got, prefix) || !strings.HasSuffix(got, tc.want+"\n") {
 				t.Errorf("код = %d, stderr = %q, ожидались 2 и %q…%q", code, got, prefix, tc.want)
 			}

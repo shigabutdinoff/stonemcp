@@ -22,6 +22,9 @@ type Config struct {
 	Addr string
 	// Logger принимает сообщения соединения, nil отключает журнал.
 	Logger *slog.Logger
+	// Banner задаёт текст, который движок печатает в правом верхнем углу
+	// экрана игры на каждом кадре. Пустой текст отключает строку.
+	Banner string
 	// ReconnectDelays задаёт паузы перед повторным подключением,
 	// по умолчанию 1 с, 3 с и 5 с. Последняя пауза повторяется.
 	ReconnectDelays []time.Duration
@@ -80,6 +83,9 @@ func (c Config) validate() error {
 	}
 	if !validDelays(c.ReconnectDelays) || c.ReadTimeout <= 0 || c.ProbeInterval <= 0 || c.FrameBudget <= len(baseVars) || c.MaxPacket < 0 {
 		return fmt.Errorf("недопустимые лимиты движка")
+	}
+	if err := c.validateBanner(); err != nil {
+		return err
 	}
 	return fitAll(baseRequests, c.MaxPacket)
 }

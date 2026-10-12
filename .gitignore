@@ -36,3 +36,4 @@ go.work.sum
 # Built binary
 /stonemcp
 /dist/
+/.buildnumber
