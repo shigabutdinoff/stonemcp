@@ -1,0 +1,3 @@
+[submodule "internal/fakegame/src"]
+	path = internal/fakegame/src
+	url = https://github.com/shigabutdinoff/stonemcp-fakegame.git
