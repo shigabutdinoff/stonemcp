@@ -28,11 +28,11 @@ func (e *Engine) commandGuardLocked(job *commandJob, now time.Time) error {
 
 func (e *Engine) post(s *session) error {
 	jobs, ready, deferred := e.takeCommands()
-	return e.sendCommands(s, jobs, ready, deferred)
+	return e.sendCommands(s, e.bannerRequests(), jobs, ready, deferred)
 }
 
-func (e *Engine) sendCommands(s *session, jobs []*commandJob, ready, deferred []heldCommand) error {
-	reqs := holdRequests(ready)
+func (e *Engine) sendCommands(s *session, lead []mc.Request, jobs []*commandJob, ready, deferred []heldCommand) error {
+	reqs := append(lead, holdRequests(ready)...)
 	for _, job := range jobs {
 		reqs = append(reqs, job.cmd.request())
 	}
@@ -43,7 +43,7 @@ func (e *Engine) sendCommands(s *session, jobs []*commandJob, ready, deferred []
 	if err != nil {
 		return err
 	}
-	e.applyResults(ready, jobs, values)
+	e.applyResults(ready, jobs, values[len(lead):])
 	return e.restoreHolds(s, deferred)
 }
 

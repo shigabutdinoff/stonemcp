@@ -40,7 +40,7 @@ func play(ctx context.Context, o options, transport mcp.Transport, logger *slog.
 	logger.Info("stonemcp запущен", "версия", cmp.Or(buildVersion, "N/A"), "номер сборки", cmp.Or(buildNumber, "N/A"),
 		"дата сборки", cmp.Or(buildDate, "N/A"), "коммит", cmp.Or(buildCommit, "N/A"), "режим", o.Mode, "адрес", o.Addr)
 	ctx, cancel := context.WithCancel(ctx)
-	eng := engine.New(engine.Config{Addr: o.Addr, Logger: logger})
+	eng := engine.New(engine.Config{Addr: o.Addr, Logger: logger, Banner: "stonemcp " + v})
 	var engineDone sync.WaitGroup
 	engineDone.Go(func() {
 		if err := eng.Run(ctx); err != nil {
